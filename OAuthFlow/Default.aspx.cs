@@ -16,13 +16,19 @@ namespace OAuthFlow
         private const string redirect_uri = "https://localhost:44300/";
         private const string resource = "https://karentest.onmicrosoft.com/OAuthFlow";
 
-        private string requestCodeUrl = String.Format("https://login.microsoftonline.com/common/oauth2/authorize?response_type=code&client_id={0}&redirect_uri={1}&resource={2}",
+        
+        private string requestCodeUrl = 
+            String.Format("https://login.microsoftonline.com/common/oauth2/authorize?response_type=code&client_id={0}&redirect_uri={1}&state={3}",
                   client_ID,
-                  redirect_uri,
-                  resource);
+                  HttpUtility.UrlEncode(redirect_uri),
+                   HttpUtility.UrlEncode(resource),
+                  Guid.NewGuid().ToString()
+                );
         private string _code = string.Empty;
         protected void Page_Load(object sender, EventArgs e)
         {
+
+            //  RequestCode();
             if (Request.QueryString["Code"] == null)
             {
                 Response.Redirect(requestCodeUrl);
@@ -33,7 +39,7 @@ namespace OAuthFlow
                 GetTokenFromCode();
             }
 
-            // RequestCode();
+            //RequestCode();
 
         }
         public void RequestCode()
@@ -55,11 +61,12 @@ namespace OAuthFlow
         {
             string tokenUrl = string.Format("https://login.microsoftonline.com/{0}/oauth2/token",telnant_id);
 
-            string postString = string.Format("grant_type=authorization_code&client_id={0}&code={1}&redirect_uri={2}$resource={3}&client_secret=Password01!",
+            string postString = string.Format("grant_type=authorization_code&client_id={0}&code={1}&redirect_uri={2}&resource={3}&client_secret=Password01!",
                 client_ID,
                 _code,
-                redirect_uri,
-                resource);
+                HttpUtility.UrlEncode(redirect_uri),
+                HttpUtility.UrlEncode(resource)
+                );
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(tokenUrl);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
