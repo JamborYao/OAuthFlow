@@ -16,7 +16,7 @@ namespace OAuthFlow
         private const string redirect_uri = "https://localhost:44300/";
         private const string resource = "https://karentest.onmicrosoft.com/OAuthFlow";
 
-        private string requestCodeUrl = String.Format("https://login.microsoftonline.com/common/oauth2/authorize?response_type=code&client_id={0}&redirect_uri={1}?resource={2}",
+        private string requestCodeUrl = String.Format("https://login.microsoftonline.com/common/oauth2/authorize?response_type=code&client_id={0}&redirect_uri={1}&resource={2}",
                   client_ID,
                   redirect_uri,
                   resource);
