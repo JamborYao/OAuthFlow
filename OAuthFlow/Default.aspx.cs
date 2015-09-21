@@ -15,6 +15,8 @@ namespace OAuthFlow
         private const string client_ID = "377657e9-8bc2-4fd8-8775-6f619ecb0e5d";
         private const string redirect_uri = "https://localhost:44300/";
         private const string resource = "https://karentest.onmicrosoft.com/OAuthFlow";
+        private const string client_secret = "+ayIst0OG7T8ka82ro7RGOkqkJ807d24fIqLREHSSoM=";
+        string password = "Doro0674";
 
         private string requestCodeUrl = String.Format("https://login.microsoftonline.com/common/oauth2/authorize?response_type=code&client_id={0}&redirect_uri={1}&resource={2}",
                   client_ID,
@@ -55,11 +57,13 @@ namespace OAuthFlow
         {
             string tokenUrl = string.Format("https://login.microsoftonline.com/{0}/oauth2/token",telnant_id);
 
-            string postString = string.Format("grant_type=authorization_code&client_id={0}&code={1}&redirect_uri={2}$resource={3}&client_secret=Password01!",
+            string postString = string.Format("grant_type=authorization_code&client_id={0}&code={1}&redirect_uri={2}$resource={3}&client_secret={4}",
                 client_ID,
                 _code,
                 redirect_uri,
-                resource);
+                resource,
+                client_secret
+                );
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(tokenUrl);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
