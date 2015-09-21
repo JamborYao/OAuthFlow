@@ -20,26 +20,27 @@ namespace OAuthFlow
         private const string client_secret = "+ayIst0OG7T8ka82ro7RGOkqkJ807d24fIqLREHSSoM=";
         string password = "Doro0674";
 
-        private string requestCodeUrl = String.Format("https://login.microsoftonline.com/common/oauth2/authorize?response_type=code&client_id={0}&redirect_uri={1}&resource={2}",
+        
+        private string requestCodeUrl = 
+            String.Format("https://login.microsoftonline.com/common/oauth2/authorize?response_type=code&client_id={0}&redirect_uri={1}&state={3}",
                   client_ID,
-                  redirect_uri,
-                  resource);
+                  HttpUtility.UrlEncode(redirect_uri),
+                   HttpUtility.UrlEncode(resource),
+                  Guid.NewGuid().ToString()
+                );
         private string _code = string.Empty;
         protected void Page_Load(object sender, EventArgs e)
         {
-            GetAuthorizationHeader();
-            if (!IsPostBack)
+            if (Request.QueryString["Code"] == null)
             {
-                if (Request.QueryString["Code"] == null)
-                {
-                    Response.Redirect(requestCodeUrl);
-                }
-                else
-                {
-                    _code = Request.QueryString["code"].ToString();
-                    GetTokenFromCode();
-                }
+                Response.Redirect(requestCodeUrl);
             }
+            else
+            {
+                _code = Request.QueryString["code"].ToString();
+                GetTokenFromCode();
+            }
+
             // RequestCode();
 
         }
@@ -62,13 +63,11 @@ namespace OAuthFlow
         {
             string tokenUrl = string.Format("https://login.microsoftonline.com/{0}/oauth2/token", telnant_id);
 
-            string postString = string.Format("grant_type=authorization_code&client_id={0}&code={1}&redirect_uri={2}$resource={3}&client_secret={4}",
+            string postString = string.Format("grant_type=authorization_code&client_id={0}&code={1}&redirect_uri={2}$resource={3}&client_secret=Password01!",
                 client_ID,
                 _code,
                 redirect_uri,
-                resource,
-                client_secret
-                );
+                resource);
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(tokenUrl);
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
