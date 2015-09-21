@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -25,16 +27,19 @@ namespace OAuthFlow
         private string _code = string.Empty;
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Request.QueryString["Code"] == null)
+            GetAuthorizationHeader();
+            if (!IsPostBack)
             {
-                Response.Redirect(requestCodeUrl);
+                if (Request.QueryString["Code"] == null)
+                {
+                    Response.Redirect(requestCodeUrl);
+                }
+                else
+                {
+                    _code = Request.QueryString["code"].ToString();
+                    GetTokenFromCode();
+                }
             }
-            else
-            {
-                _code = Request.QueryString["code"].ToString();
-                GetTokenFromCode();
-            }
-
             // RequestCode();
 
         }
@@ -45,9 +50,9 @@ namespace OAuthFlow
             request.Method = "GET";
             using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
             {
-                Stream stream= response.GetResponseStream();
+                Stream stream = response.GetResponseStream();
                 StreamReader reader = new StreamReader(stream);
-                string responseContent= reader.ReadToEnd();
+                string responseContent = reader.ReadToEnd();
 
             }
 
@@ -55,7 +60,7 @@ namespace OAuthFlow
 
         public void GetTokenFromCode()
         {
-            string tokenUrl = string.Format("https://login.microsoftonline.com/{0}/oauth2/token",telnant_id);
+            string tokenUrl = string.Format("https://login.microsoftonline.com/{0}/oauth2/token", telnant_id);
 
             string postString = string.Format("grant_type=authorization_code&client_id={0}&code={1}&redirect_uri={2}$resource={3}&client_secret={4}",
                 client_ID,
@@ -74,11 +79,43 @@ namespace OAuthFlow
                 streamWrite.Write(postString);
             }
 
-            using (var response=request.GetResponse())
+            using (var response = request.GetResponse())
             {
                 StreamReader streamReader = new StreamReader(response.GetResponseStream());
-                string responseData= streamReader.ReadToEnd();
+                string responseData = streamReader.ReadToEnd();
             }
         }
+
+        private static string GetAuthorizationHeader()
+        {
+            AuthenticationResult result = null;
+
+            var context = new AuthenticationContext(string.Format(
+              "https://login.windows.net/{0}",
+              telnant_id));
+
+            var thread = new Thread(() =>
+            {
+               
+                result = context.AcquireToken(
+                  "https://management.core.windows.net/",
+                  client_ID,
+                  new Uri(redirect_uri));
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Name = "AquireTokenThread";
+            thread.Start();
+            thread.Join();
+
+            if (result == null)
+            {
+                throw new InvalidOperationException("Failed to obtain the JWT token");
+            }
+
+            string token = result.AccessToken;
+            return token;
+        }
+
     }
 }
